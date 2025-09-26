@@ -1,0 +1,1 @@
+export { default } from '@/app/notes/filter/[...slug]/Notes.client';
