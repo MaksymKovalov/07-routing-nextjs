@@ -20,6 +20,7 @@ const NotePreview = ({ noteId }: NotePreviewProps) => {
   } = useQuery({
     queryKey: ['note', noteId],
     queryFn: () => fetchNoteById(noteId),
+    refetchOnMount: false,
   });
 
   const handleClose = () => {
