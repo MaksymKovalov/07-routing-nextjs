@@ -1,16 +1,26 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Modal from '@/components/Modal/Modal';
-import type { Note } from '@/types/note';
+import { fetchNoteById } from '@/lib/api';
 import css from './NotePreview.module.css';
 
 type NotePreviewProps = {
-  note: Note;
+  noteId: string;
 };
 
-const NotePreview = ({ note }: NotePreviewProps) => {
+const NotePreview = ({ noteId }: NotePreviewProps) => {
   const router = useRouter();
+  const {
+    data: note,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ['note', noteId],
+    queryFn: () => fetchNoteById(noteId),
+  });
 
   const handleClose = () => {
     router.back();
@@ -22,16 +32,27 @@ const NotePreview = ({ note }: NotePreviewProps) => {
         <button type="button" className={css.backBtn} onClick={handleClose}>
           ← Back
         </button>
-        <div className={css.item}>
-          <div className={css.header}>
-            <h2>{note.title}</h2>
-            <span className={css.tag}>{note.tag}</span>
+        {isLoading && <p className={css.status}>Loading note…</p>}
+        {(isError || !note) && !isLoading && (
+          <div className={css.status}>
+            <p>We couldn&apos;t load this note.</p>
+            <button type="button" className={css.retryBtn} onClick={() => refetch()}>
+              Try again
+            </button>
           </div>
-          <p className={css.content}>{note.content}</p>
-          <p className={css.date}>
-            {new Date(note.createdAt).toLocaleString()}
-          </p>
-        </div>
+        )}
+        {note && !isLoading && !isError && (
+          <div className={css.item}>
+            <div className={css.header}>
+              <h2>{note.title}</h2>
+              <span className={css.tag}>{note.tag}</span>
+            </div>
+            <p className={css.content}>{note.content}</p>
+            <p className={css.date}>
+              {new Date(note.createdAt).toLocaleString()}
+            </p>
+          </div>
+        )}
       </div>
     </Modal>
   );
